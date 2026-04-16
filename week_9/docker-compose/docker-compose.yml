@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  # Servei 1: Nginx
+  nginx:
+    image: ${NGINX_IMAGE}
+    container_name: ${NGINX_NAME}
+    ports:
+      - "${NGINX_PORT}:80"          # Mapeja el port extern al 80 intern
+    volumes:
+      - ${VOLUME_NAME}:/data        # Volum per a dades compartides
+    restart: always
+
+  # Servei 2: Backend
+  backend:
+    image: ${BACKEND_IMAGE}
+    container_name: ${BACKEND_NAME}
+    ports:
+      - "${BACKEND_PORT}:8080"      # Mapeja el port extern al 8080 intern
+    volumes:
+      - ${VOLUME_NAME}:/data        # Mateix volum per persistència compartida
+    restart: always            
+
+# Definició de recursos globals
+volumes:
+  ${VOLUME_NAME}:                    # Crea un volum persistent al sistema
+
+networks:
+  default:
+    name: ${NETWORK_NAME}            # Crea una xarxa virtual per a que es parlin per nom
