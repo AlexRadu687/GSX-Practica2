@@ -23,8 +23,8 @@ services:
 
 # Definició de recursos globals
 volumes:
-  ${VOLUME_NAME}:                    # Crea un volum persistent al sistema
+  dades_compartides:                # Crea un volum persistent al sistema
 
 networks:
   default:
-    name: ${NETWORK_NAME}            # Crea una xarxa virtual per a que es parlin per nom
+    name: ${NETWORK_NAME}           # Crea una xarxa virtual per a que es parlin per nom
