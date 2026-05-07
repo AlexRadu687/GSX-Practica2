@@ -45,7 +45,7 @@ Tota la configuració es centralitza en el fitxer `.env`:
 | Variable | Valor per defecte | Descripció |
 |---|---|---|
 | `NGINX_IMAGE` | `eusebiuboloc/nginx-gsx:v2` | Imatge del servidor Nginx |
-| `BACKEND_IMAGE` | `eusebiuboloc/python-http-server:v1.0` | Imatge del backend Python |
+| `BACKEND_IMAGE` | `eusebiuboloc/python-http-server:v1` | Imatge del backend Python |
 | `NGINX_PORT` | `80` | Port extern del servidor Nginx |
 | `BACKEND_PORT` | `8080` | Port extern del backend Python |
 | `NGINX_NAME` | `nginx-proxy` | Nom del contenidor Nginx |
