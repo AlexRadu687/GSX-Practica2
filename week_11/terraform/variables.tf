@@ -7,7 +7,7 @@
 # només cal canviar aquest valor, no cal tocar el main.tf.
 variable "nginx_image" {
   description = "Imatge Docker de Nginx"
-  type        = string                 
+  type        = string
   default     = "eusebiuboloc/nginx-gsx:v2"
 }
 
@@ -27,7 +27,7 @@ variable "backend_image" {
 # Es pot augmentar fàcilment si hi ha més tràfic sense canviar el codi.
 variable "nginx_replicas" {
   description = "Nombre de rèpliques del servei Nginx"
-  type        = number                          
+  type        = number
   default     = 2
 }
 

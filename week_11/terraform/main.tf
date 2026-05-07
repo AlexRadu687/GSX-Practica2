@@ -4,7 +4,7 @@ terraform {
   required_providers {
     kubernetes = {
       source  = "hashicorp/kubernetes" # Descarregat del registre oficial de Terraform
-      version = "~> 2.0"              # Qualsevol versió 2.x (no la 3.0 o superior)
+      version = "~> 2.0"               # Qualsevol versió 2.x (no la 3.0 o superior)
     }
   }
 }
