@@ -1,0 +1,54 @@
+# Tipo de recurso: un Deployment gestiona pods y los mantiene vivos
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend          # Nombre del Deployment
+  namespace: default     # Namespace donde se crea (default = sin separación)
+  labels:
+    app: backend         # Etiqueta para identificar este recurso
+spec:
+  replicas: 1            # Cuantos pods queremos ejecutando simultaneamente
+  selector:
+    matchLabels:
+      app: backend       # El Deployment gestiona los pods que tengan esta etiqueta
+  template:              # Plantilla para crear cada pod
+    metadata:
+      labels:
+        app: backend     # Etiqueta del pod (debe coincidir con matchLabels)
+    spec:
+      containers:
+        - name: backend                                   # Nombre del contenedor
+          image: eusebiuboloc/python-http-server:v1       # Imagen de Docker Hub
+          imagePullPolicy: IfNotPresent                   # Usa la imagen local si ya esta cargada
+          ports:
+            - containerPort: 3000                         # Puerto que expone el contenedor
+          env:
+            # Variable de entorno PORT, cogida del ConfigMap (configmap.yml)
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config   # Nombre del ConfigMap
+                  key: APP_PORT      # Clave dentro del ConfigMap
+            # Variable de entorno APP_ENV, tambien del ConfigMap
+            - name: APP_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: APP_ENV
+
+---  # Separador entre dos recursos en el mismo archivo
+
+# El Service le da un nombre fijo al backend para que otros pods lo encuentren
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service  # Nombre con el que otros pods se conectan: http://backend-service:3000
+  namespace: default
+spec:
+  selector:
+    app: backend         # Envia trafico a los pods con esta etiqueta
+  ports:
+    - protocol: TCP
+      port: 3000         # Puerto que expone el Service dentro del cluster
+      targetPort: 3000   # Puerto al que redirige en el pod
+  type: ClusterIP        # Solo accesible dentro del cluster, no desde fuera

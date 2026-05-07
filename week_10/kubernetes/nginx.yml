@@ -1,0 +1,42 @@
+# Tipo de recurso: un Deployment gestiona pods y los mantiene vivos
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx            # Nombre del Deployment
+  namespace: default     # Namespace donde se crea
+  labels:
+    app: nginx           # Etiqueta para identificar este recurso
+spec:
+  replicas: 1            # Cuantos pods queremos ejecutando a la vez
+  selector:
+    matchLabels:
+      app: nginx         # El Deployment gestiona los pods que tengan esta etiqueta
+  template:              # Plantilla para crear cada pod
+    metadata:
+      labels:
+        app: nginx       # Etiqueta del pod (debe coincidir con matchLabels)
+    spec:
+      containers:
+        - name: nginx                        # Nombre del contenedor
+          image: eusebiuboloc/nginx-gsx:v2   # Imagen de Docker Hub
+          imagePullPolicy: IfNotPresent      # Usa la imagen local si ya esta cargada
+          ports:
+            - containerPort: 80              # Puerto que expone el contenedor
+
+---  # Separador entre dos recursos en el mismo archivo
+
+# El Service expone Nginx hacia fuera del cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service    # Nombre del Service
+  namespace: default
+spec:
+  selector:
+    app: nginx           # Envia tráfico a los pods con esta etiqueta
+  ports:
+    - protocol: TCP
+      port: 80           # Puerto que expone el Service
+      targetPort: 80     # Puerto al que redirige en el pod
+      nodePort: 30080    # Puerto accesible (minikube ip:30080)
+  type: NodePort         # Accesible desde fuera del cluster, a diferencia de ClusterIP
