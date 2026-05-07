@@ -1,0 +1,107 @@
+# Nom que apareixerà a la interfície de GitHub Actions
+name: CI Pipeline
+
+# Defineix quan s'executa aquest workflow.
+# En aquest cas, cada vegada que es fa git push a la branca main.
+# Si puges codi a qualsevol altra branca, el workflow no s'executa.
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  # ─────────────────────────────────────────
+  # JOB 1: Construir i pujar les imatges Docker
+  # ─────────────────────────────────────────
+  # Aquest job s'encarrega de construir les imatges Docker
+  # i pujar-les a Docker Hub amb el tag del commit SHA.
+  build-and-push:
+    runs-on: ubuntu-latest  # GitHub crea una màquina virtual amb Ubuntu per executar aquest job
+
+    steps:
+      # 1. Descarrega el codi del repositori a la màquina virtual de GitHub.
+      #    Sempre ha de ser el primer step — sense això, els altres steps
+      #    no trobarien els Dockerfiles ni cap fitxer del projecte.
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Inicia sessió a Docker Hub per poder pujar imatges.
+      #    Les credencials mai s'escriuen directament aquí —
+      #    s'accedeix als secrets configurats a GitHub:
+      #    Repositori → Settings → Secrets and variables → Actions
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}  # Secret: l'usuari de Docker Hub
+          password: ${{ secrets.DOCKERHUB_TOKEN }}     # Secret: token d'accés de Docker Hub
+
+      # 3. Construeix la imatge de Nginx i la puja a Docker Hub.
+      #    Es puja amb dos tags simultàniament:
+      #    - github.sha: identifica exactament quin commit va generar aquesta imatge
+      #      (ex: eusebiuboloc/nginx-gsx:a3f8c2d1b...)
+      #    - latest: sempre apunta a la versió més recent, còmode per usar localment
+      - name: Build and push Nginx image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./week_8/nginx  # Directori on es troba el Dockerfile de Nginx
+          push: true               # Puja la imatge un cop construïda
+          tags: |
+            eusebiuboloc/nginx-gsx:${{ github.sha }}  # Tag específic del commit
+            eusebiuboloc/nginx-gsx:latest             # Tag genèric "últim"
+
+      # 4. Construeix la imatge del backend Python i la puja a Docker Hub.
+      #    Mateixa lògica que el step anterior però per al backend.
+      - name: Build and push Backend image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./week_8/python-http-server  # Directori on es troba el Dockerfile del backend
+          push: true
+          tags: |
+            eusebiuboloc/python-http-server:${{ github.sha }}
+            eusebiuboloc/python-http-server:latest
+
+  # ─────────────────────────────────────────
+  # JOB 2: Validar els fitxers de Terraform
+  # ─────────────────────────────────────────
+  # Aquest job corre en paral·lel amb build-and-push.
+  # S'encarrega de comprovar que el codi de Terraform és correcte
+  # sense connectar-se a Minikube ni crear cap recurs real.
+  validate-terraform:
+    runs-on: ubuntu-latest  # Una altra màquina virtual independent
+
+    steps:
+      # 5. Igual que abans — descarrega el codi del repositori.
+      #    Cada job corre en una màquina nova i buida,
+      #    per tant cal fer checkout a cada job per separat.
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 6. Instal·la Terraform a la màquina virtual de GitHub.
+      #    La màquina no té Terraform per defecte —
+      #    aquesta acció oficial de HashiCorp l'instal·la automàticament.
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      # 7. Comprova que el format dels fitxers HCL és correcte.
+      #    És com un corrector ortogràfic per a Terraform —
+      #    si algun fitxer no segueix el format estàndard, el workflow falla.
+      #    working-directory indica en quin directori s'executa la comanda.
+      - name: Terraform format check
+        run: terraform fmt -check
+        working-directory: ./week_11/terraform
+
+      # 8. Inicialitza Terraform descarregant el provider de Kubernetes.
+      #    El flag -backend=false és clau: sense ell, Terraform intentaria
+      #    connectar-se a Minikube (que no és accessible des de GitHub)
+      #    i el workflow fallaria. Amb el flag, només descarrega el provider.
+      - name: Terraform init
+        run: terraform init -backend=false
+        working-directory: ./week_11/terraform
+
+      # 9. Valida que la sintaxi dels fitxers de Terraform és correcta.
+      #    Comprova que no hi ha variables no definides, que els recursos
+      #    estan ben formats i que les referències entre recursos existeixen.
+      #    És com un compilador que revisa el codi sense executar-lo.
+      - name: Terraform validate
+        run: terraform validate
+        working-directory: ./week_11/terraform
