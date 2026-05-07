@@ -7,6 +7,8 @@
 
 set -e
 
+# Se puede ejecutar desde donde sea este script
+
 DOCKER_USERNAME="eusebiuboloc"
 NGINX_IMAGE="$DOCKER_USERNAME/nginx-gsx:v2"
 BACKEND_IMAGE="$DOCKER_USERNAME/python-http-server:v1"
@@ -35,9 +37,6 @@ echo ""
 # Hace pull solo si no existe en local
 # Hace load solo si no existe en Minikube
 # ===============================================================
- 
-NGINX_IMAGE="$DOCKER_USERNAME/$NGINX_IMAGE"
-BACKEND_IMAGE="$DOCKER_USERNAME/$BACKEND_IMAGE"
  
 echo "================================================================================"
 echo "  GreenDevCorp - Pull & Load imagenes"
@@ -80,15 +79,15 @@ load_if_needed() {
 # NGINX
 # ===========================================
 echo "NGINX:"
-pull_if_needed "$$DOCKER_USERNAME/$NGINX_IMAGE"
-load_if_needed "$$DOCKER_USERNAME/$NGINX_IMAGE"
+pull_if_needed "$NGINX_IMAGE"
+load_if_needed "$NGINX_IMAGE"
  
 # ===========================================
 # BACKEND
 # ===========================================
 echo "BACKEND:"
-pull_if_needed "$$DOCKER_USERNAME/$BACKEND_IMAGE"
-load_if_needed "$$DOCKER_USERNAME/$BACKEND_IMAGE"
+pull_if_needed "$BACKEND_IMAGE"
+load_if_needed "$BACKEND_IMAGE"
  
 # ===========================================
 # Comprobación de si se ha cargado correctamente
@@ -97,3 +96,27 @@ echo "==========================================================================
 echo "Imagenes disponibles en Minikube:"
 minikube image ls | grep eusebiuboloc
 echo "================================================================================"
+
+# ===========================================
+# PASO 2: Desplegar en Kubernetes
+# ===========================================
+echo "PASO 2: Desplegando en Kubernetes..."
+kubectl apply -f "$K8S_DIR/"
+echo ""
+
+echo "Esperando a que los pods arranquen..."
+kubectl wait --for=condition=ready pod -l app=backend --timeout=120s
+kubectl wait --for=condition=ready pod -l app=nginx --timeout=120s
+echo ""
+
+# ===========================================
+# PASO 3: Verificar pods y servicios
+# ===========================================
+echo "PASO 3: Verificando pods y servicios..."
+echo ""
+echo "PODS:"
+kubectl get pods
+echo ""
+echo "SERVICES:"
+kubectl get services
+echo ""

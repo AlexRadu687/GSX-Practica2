@@ -42,13 +42,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: backend-service  # Nombre con el que otros pods se conectan: http://backend-service:3000
+  name: python-backend  # Nombre con el que otros pods se conectan: http://python-backend:8080
   namespace: default
 spec:
   selector:
     app: backend         # Envia trafico a los pods con esta etiqueta
   ports:
     - protocol: TCP
-      port: 3000         # Puerto que expone el Service dentro del cluster
+      port: 8080         # Puerto que expone el Service dentro del cluster
       targetPort: 3000   # Puerto al que redirige en el pod
   type: ClusterIP        # Solo accesible dentro del cluster, no desde fuera
