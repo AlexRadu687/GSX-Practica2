@@ -6,10 +6,33 @@ L'objectiu és desplegar una arquitectura web completa composta per un servidor 
 
 ## Arquitectura del Sistema
 
-L'entorn es divideix en dos serveis principals que es comuniquen a través d'una xarxa virtual interna:
+L'entorn utilitza una arquitectura de microserveis on cada component té una responsabilitat única:
 
-- **Nginx (Frontal):** Actua com a punt d'entrada web. Rep peticions al port extern definit al `.env` i les redirigeix al port 80 del contenidor.
-- **Backend (Python):** Servidor HTTP desenvolupat en la fase anterior de la pràctica. Es carrega directament des de la imatge allotjada a Docker Hub (`eusebiuboloc/python-http-server:v1.0`) i escolta al port 8080.
+- **Usuari/Client:** Accedeix al sistema a través del port definit (per defecte el 80).
+
+- **Nginx (Frontal/Proxy):** Rep la petició i la redirigeix internament al backend. Això aïlla el servidor d'aplicacions del món exterior.
+
+- **Backend (Python):** Processa la petició i retorna la resposta.
+
+- **Volum Compartit:** Espai de persistència on ambdós contenidors poden escriure i llegir dades.
+
+### Diagrama de Flux
+
+```text
+[ Client (Navegador) ]
+                 |
+           (Port 80 Ext)
+                 v
+       +-----------------------+
+       |  Nginx Reverse Proxy  | 
+       +-----------------------+
+                 |
+          (gsx-network:8080)
+                 v
+       +-----------------------+          +------------------------+
+       |    Python Backend     | <------> | Volum: dades_compartides |
+       +-----------------------+          +------------------------+
+```
 
 ## Configuració i Gestió de Variables
 
@@ -21,7 +44,7 @@ Tota la configuració es centralitza en el fitxer `.env`:
 
 | Variable | Valor per defecte | Descripció |
 |---|---|---|
-| `NGINX_IMAGE` | `nginx:latest` | Imatge del servidor Nginx |
+| `NGINX_IMAGE` | `eusebiuboloc/nginx-gsx:v2` | Imatge del servidor Nginx |
 | `BACKEND_IMAGE` | `eusebiuboloc/python-http-server:v1.0` | Imatge del backend Python |
 | `NGINX_PORT` | `80` | Port extern del servidor Nginx |
 | `BACKEND_PORT` | `8080` | Port extern del backend Python |
@@ -43,7 +66,7 @@ Per garantir que les dades sobrevisquin al reinici dels contenidors, s'ha config
 
 Tots els serveis estan units a una xarxa virtual (per defecte `gsx-network`). Aquesta configuració permet:
 
-- **Service Discovery:** L'Nginx pot comunicar-se amb el backend utilitzant el nom de servei (`http://backend:8080`) en lloc d'adreces IP variables.
+- **Service Discovery:** L'Nginx pot comunicar-se amb el backend utilitzant el nom de servei (`http://python-backend:8080`) en lloc d'adreces IP variables.
 - **Aïllament:** La comunicació entre contenidors és privada dins de la xarxa virtual.
 
 ## Instruccions d'Ús
