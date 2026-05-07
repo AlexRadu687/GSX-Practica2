@@ -23,14 +23,14 @@ jobs:
       #    Sempre ha de ser el primer step — sense això, els altres steps
       #    no trobarien els Dockerfiles ni cap fitxer del projecte.
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # 2. Inicia sessió a Docker Hub per poder pujar imatges.
       #    Les credencials mai s'escriuen directament aquí —
       #    s'accedeix als secrets configurats a GitHub:
       #    Repositori → Settings → Secrets and variables → Actions
       - name: Login to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}  # Secret: l'usuari de Docker Hub
           password: ${{ secrets.DOCKERHUB_TOKEN }}     # Secret: token d'accés de Docker Hub
@@ -41,23 +41,23 @@ jobs:
       #      (ex: eusebiuboloc/nginx-gsx:a3f8c2d1b...)
       #    - latest: sempre apunta a la versió més recent, còmode per usar localment
       - name: Build and push Nginx image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: ./week_8/nginx  # Directori on es troba el Dockerfile de Nginx
           push: true               # Puja la imatge un cop construïda
           tags: |
-            eusebiuboloc/nginx-gsx:${{ github.sha }}  # Tag específic del commit
+            eusebiuboloc/nginx-gsx:${{ github.run_number }}  # Tag específic del commit
             eusebiuboloc/nginx-gsx:latest             # Tag genèric "últim"
 
       # 4. Construeix la imatge del backend Python i la puja a Docker Hub.
       #    Mateixa lògica que el step anterior però per al backend.
       - name: Build and push Backend image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: ./week_8/python-http-server  # Directori on es troba el Dockerfile del backend
           push: true
           tags: |
-            eusebiuboloc/python-http-server:${{ github.sha }}
+            eusebiuboloc/python-http-server:${{ github.run_number }}
             eusebiuboloc/python-http-server:latest
 
   # ─────────────────────────────────────────
@@ -74,13 +74,13 @@ jobs:
       #    Cada job corre en una màquina nova i buida,
       #    per tant cal fer checkout a cada job per separat.
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # 6. Instal·la Terraform a la màquina virtual de GitHub.
       #    La màquina no té Terraform per defecte —
       #    aquesta acció oficial de HashiCorp l'instal·la automàticament.
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
 
       # 7. Comprova que el format dels fitxers HCL és correcte.
       #    És com un corrector ortogràfic per a Terraform —
