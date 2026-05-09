@@ -101,12 +101,12 @@ echo "==========================================================================
 # PASO 2: Desplegar en Kubernetes
 # ===========================================
 echo "PASO 2: Desplegando en Kubernetes..."
-kubectl apply -f "$K8S_DIR/"
+minikube kubectl -- apply -f "$K8S_DIR/"
 echo ""
 
 echo "Esperando a que los pods arranquen..."
-kubectl wait --for=condition=ready pod -l app=backend --timeout=120s
-kubectl wait --for=condition=ready pod -l app=nginx --timeout=120s
+minikube kubectl -- wait --for=condition=ready pod -l app=backend --timeout=120s
+minikube kubectl -- wait --for=condition=ready pod -l app=nginx --timeout=120s
 echo ""
 
 # ===========================================
@@ -115,8 +115,65 @@ echo ""
 echo "PASO 3: Verificando pods y servicios..."
 echo ""
 echo "PODS:"
-kubectl get pods
+minikube kubectl -- get pods
 echo ""
 echo "SERVICES:"
-kubectl get services
+minikube kubectl -- get services
 echo ""
+
+# ===========================================
+# PASO 4: Test de comunicacion entre servicios
+# ===========================================
+echo "PASO 4: Testeando comunicacion entre servicios..."
+NGINX_POD=$(minikube kubectl -- get pod -l app=nginx -o jsonpath="{.items[0].metadata.name}")
+echo "Ejecutando curl desde el pod Nginx ($NGINX_POD) hacia backend-service..."
+minikube kubectl -- exec -it $NGINX_POD -- sh -c "wget -qO- http://backend-service:3000 || echo 'wget no disponible, probando curl...' && curl -s http://backend-service:3000" || echo "⚠️  Test manual: kubectl exec -it $NGINX_POD -- sh"
+echo ""
+
+# ===========================================
+# PASO 5: Test de escalado
+# ===========================================
+echo "PASO 5: Testeando escalado..."
+echo "Escalando Nginx a 3 replicas..."
+minikube kubectl -- scale deployment nginx --replicas=3
+echo "Esperando a que arranquen los nuevos pods..."
+sleep 5
+minikube kubectl -- get pods
+echo ""
+echo "Volviendo a 1 replica..."
+minikube kubectl -- scale deployment nginx --replicas=1
+sleep 3
+minikube kubectl -- get pods
+echo ""
+
+# ===========================================
+# PASO 6: Test de resiliencia
+# ===========================================
+echo "PASO 6: Testeando resiliencia..."
+BACKEND_POD=$(minikube kubectl -- get pod -l app=backend -o jsonpath="{.items[0].metadata.name}")
+echo "Eliminando pod backend: $BACKEND_POD"
+minikube kubectl -- delete pod $BACKEND_POD
+echo "Esperando a que Kubernetes lo reinicie automaticamente..."
+sleep 5
+minikube kubectl -- get pods
+echo ""
+
+# ===========================================
+# RESULTADO FINAL
+# ===========================================
+echo "================================================================================"
+echo "Week 10 completada"
+echo "================================================================================"
+echo ""
+echo "URL del frontend:"
+minikube service nginx-service --url
+echo ""
+echo "Comandos utiles:"
+echo "  kubectl get pods                          # Ver pods"
+echo "  kubectl get services                      # Ver servicios"
+echo "  kubectl logs <pod-name>                   # Ver logs"
+echo "  kubectl describe pod <pod-name>           # Detalles del pod"
+echo "  minikube service nginx-service --url      # URL del frontend"
+echo ""
+echo "Para limpiar todo:"
+echo "  kubectl delete -f kubernetes/"
