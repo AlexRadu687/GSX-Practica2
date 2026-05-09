@@ -4,6 +4,6 @@ metadata:
   name: app-config
   namespace: default
 data:
-  APP_PORT: "3000"                    # Puerto donde escucha el backend
+  APP_PORT: "8080"                    # Puerto donde escucha el backend
   APP_ENV: "production"               # Entorno donde se ejecuta la app
   APP_NAME: "GreenDevCorp Backend"    # Nombre de la app
