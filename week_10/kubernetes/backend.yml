@@ -21,7 +21,7 @@ spec:
           image: eusebiuboloc/python-http-server:v1       # Imagen de Docker Hub
           imagePullPolicy: IfNotPresent                   # Usa la imagen local si ya esta cargada
           ports:
-            - containerPort: 3000                         # Puerto que expone el contenedor
+            - containerPort: 8080                         # Puerto que expone el contenedor
           env:
             # Variable de entorno PORT, cogida del ConfigMap (configmap.yml)
             - name: PORT
@@ -50,5 +50,5 @@ spec:
   ports:
     - protocol: TCP
       port: 8080         # Puerto que expone el Service dentro del cluster
-      targetPort: 3000   # Puerto al que redirige en el pod
+      targetPort: 8080   # Puerto al que redirige en el pod
   type: ClusterIP        # Solo accesible dentro del cluster, no desde fuera
