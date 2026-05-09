@@ -37,12 +37,12 @@ echo ""
 # Hace pull solo si no existe en local
 # Hace load solo si no existe en Minikube
 # ===============================================================
- 
+
 echo "================================================================================"
 echo "  GreenDevCorp - Pull & Load imagenes"
 echo "================================================================================"
 echo ""
- 
+
 # ===========================================
 # Pull si no existe en local
 # ===========================================
@@ -58,7 +58,7 @@ pull_if_needed() {
   fi
   echo ""
 }
- 
+
 # ===========================================
 # Load si no existe en Minikube
 # ===========================================
@@ -74,21 +74,21 @@ load_if_needed() {
   fi
   echo ""
 }
- 
+
 # ===========================================
 # NGINX
 # ===========================================
 echo "NGINX:"
 pull_if_needed "$NGINX_IMAGE"
 load_if_needed "$NGINX_IMAGE"
- 
+
 # ===========================================
 # BACKEND
 # ===========================================
 echo "BACKEND:"
 pull_if_needed "$BACKEND_IMAGE"
 load_if_needed "$BACKEND_IMAGE"
- 
+
 # ===========================================
 # Comprobación de si se ha cargado correctamente
 # ===========================================
@@ -123,11 +123,13 @@ echo ""
 
 # ===========================================
 # PASO 4: Test de comunicacion entre servicios
+# El servidor Python escucha en 8080
+# El Service python-backend expone el puerto 8080
 # ===========================================
 echo "PASO 4: Testeando comunicacion entre servicios..."
 NGINX_POD=$(minikube kubectl -- get pod -l app=nginx -o jsonpath="{.items[0].metadata.name}")
-echo "Ejecutando curl desde el pod Nginx ($NGINX_POD) hacia backend-service..."
-minikube kubectl -- exec -it $NGINX_POD -- sh -c "wget -qO- http://backend-service:3000 || echo 'wget no disponible, probando curl...' && curl -s http://backend-service:3000" || echo "⚠️  Test manual: kubectl exec -it $NGINX_POD -- sh"
+echo "Ejecutando curl desde el pod Nginx ($NGINX_POD) hacia python-backend:8080..."
+minikube kubectl -- exec $NGINX_POD -- sh -c "curl -s http://python-backend:8080" && echo "" || echo "Error en la comunicacion entre servicios"
 echo ""
 
 # ===========================================
@@ -169,11 +171,11 @@ echo "URL del frontend:"
 minikube service nginx-service --url
 echo ""
 echo "Comandos utiles:"
-echo "  kubectl get pods                          # Ver pods"
-echo "  kubectl get services                      # Ver servicios"
-echo "  kubectl logs <pod-name>                   # Ver logs"
-echo "  kubectl describe pod <pod-name>           # Detalles del pod"
-echo "  minikube service nginx-service --url      # URL del frontend"
+echo "  minikube kubectl -- get pods                        # Ver pods"
+echo "  minikube kubectl -- get services                    # Ver servicios"
+echo "  minikube kubectl -- logs <pod-name>                 # Ver logs"
+echo "  minikube kubectl -- describe pod <pod-name>         # Detalles del pod"
+echo "  minikube service nginx-service --url                # URL del frontend"
 echo ""
 echo "Para limpiar todo:"
-echo "  kubectl delete -f kubernetes/"
+echo "  minikube kubectl -- delete -f kubernetes/"
