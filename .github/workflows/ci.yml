@@ -46,8 +46,8 @@ jobs:
           context: ./week_8/nginx  # Directori on es troba el Dockerfile de Nginx
           push: true               # Puja la imatge un cop construïda
           tags: |
-            eusebiuboloc/nginx-gsx:${{ github.run_number }}  # Tag específic del commit
-            eusebiuboloc/nginx-gsx:latest             # Tag genèric "últim"
+            eusebiuboloc/nginx-gsx:${{ github.sha }}
+            eusebiuboloc/nginx-gsx:latest
 
       # 4. Construeix la imatge del backend Python i la puja a Docker Hub.
       #    Mateixa lògica que el step anterior però per al backend.
@@ -57,7 +57,7 @@ jobs:
           context: ./week_8/python-http-server  # Directori on es troba el Dockerfile del backend
           push: true
           tags: |
-            eusebiuboloc/python-http-server:${{ github.run_number }}
+            eusebiuboloc/python-http-server:${{ github.sha }}
             eusebiuboloc/python-http-server:latest
 
   # ─────────────────────────────────────────
