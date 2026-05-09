@@ -10,11 +10,11 @@ resource "kubernetes_deployment" "python_backend" {
   }
 
   spec {
-    replicas = var.backend_replicas  # 1 rèplica (definit a variables.tf)
+    replicas = var.backend_replicas # 1 rèplica (definit a variables.tf)
 
     selector {
       match_labels = {
-        app = "python-backend"       # Ha de coincidir amb els labels del template
+        app = "python-backend" # Ha de coincidir amb els labels del template
       }
     }
 
@@ -28,10 +28,10 @@ resource "kubernetes_deployment" "python_backend" {
       spec {
         container {
           name  = "python-backend"
-          image = var.backend_image  # Imatge de Docker Hub: eusebiuboloc/python-http-server:v1
+          image = var.backend_image # Imatge de Docker Hub: eusebiuboloc/python-http-server:v1
 
           port {
-            container_port = var.backend_port  # Port on escolta el backend (8080)
+            container_port = var.backend_port # Port on escolta el backend (8080)
           }
         }
       }
@@ -48,7 +48,7 @@ resource "kubernetes_service" "python_backend" {
 
   spec {
     selector = {
-      app = "python-backend"         # Enruta el tràfic als pods del backend
+      app = "python-backend" # Enruta el tràfic als pods del backend
     }
 
     port {
