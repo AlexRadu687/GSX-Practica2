@@ -8,14 +8,14 @@
 variable "nginx_image" {
   description = "Imatge Docker de Nginx"
   type        = string
-  default     = "eusebiuboloc/nginx-gsx:v2"
+  default     = "eusebiuboloc/nginx-gsx:latest"
 }
 
 # Imatge del backend Python que es descarregarà de Docker Hub.
 variable "backend_image" {
   description = "Imatge Docker del backend Python"
   type        = string
-  default     = "eusebiuboloc/python-http-server:v1"
+  default     = "eusebiuboloc/python-http-server:latest"
 }
 
 # ─────────────────────────────────────────

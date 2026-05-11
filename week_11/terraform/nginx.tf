@@ -29,7 +29,9 @@ resource "kubernetes_deployment" "nginx_proxy" {
       spec {
         container {
           name  = "nginx-proxy"   # Nom del contenidor dins del pod
-          image = var.nginx_image # Imatge de Docker Hub: eusebiuboloc/nginx-gsx:v2
+          image = var.nginx_image # Imatge de Docker Hub: eusebiuboloc/nginx-gsx:latest
+
+          image_pull_policy = "Always" # Sempre descarrega la imatge més recent 
 
           port {
             container_port = var.nginx_port # Port on escolta Nginx dins del contenidor (80)

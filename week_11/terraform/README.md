@@ -19,14 +19,14 @@ terraform/
 
 | Servei | Imatge | Port | Tipus de Service |
 |---|---|---|---|
-| nginx-proxy | eusebiuboloc/nginx-gsx:v2 | 80 | NodePort (accessible des de fora) |
-| python-backend | eusebiuboloc/python-http-server:v1 | 8080 | ClusterIP (només intern) |
+| nginx-proxy | eusebiuboloc/nginx-gsx:latest | 80 | NodePort (accessible des de fora) |
+| python-backend | eusebiuboloc/python-http-server:latest | 8080 | ClusterIP (només intern) |
 
 ## Requisits previs
 
 Abans de poder desplegar, cal tenir instal·lades les següents eines:
 
-- **Terraform**
+- **Terraform** (v1.0 o superior)
 - **Minikube**
 - **kubectl**
 
@@ -141,12 +141,7 @@ Si vols canviar algun valor (per exemple, augmentar les rèpliques de Nginx), ed
 # Edita variables.tf: default = 3
 terraform apply
 ```
-
-O sense editar el fitxer, directament per línia de comandos:
-
-```bash
-terraform apply -var="nginx_replicas=3"
-```
+>El codi està configurat amb image_pull_policy = "Always". Això permet que, quan el pipeline de CI/CD puja una nova versió de la imatge amb el tag :latest, només calgui executar terraform apply perquè Terraform forci a Kubernetes a descarregar la versió més recent del registre, encara que el nom del tag no hagi canviat.
 
 ## Com destruir la infraestructura
 
@@ -157,6 +152,42 @@ terraform destroy
 ```
 
 Terraform demanarà confirmació — escriu `yes`. Útil per fer una prova de desplegament des de zero (destroy + apply).
+
+## Variables
+
+Les variables permeten parametritzar el codi sense modificar la lògica principal. Estan definides a `variables.tf`:
+
+| Variable | Tipus | Valor per defecte | Descripció |
+|---|---|---|---|
+| `nginx_image` | string | `eusebiuboloc/nginx-gsx:latest` | Imatge Docker de Nginx |
+| `backend_image` | string | `eusebiuboloc/python-http-server:latest` | Imatge Docker del backend |
+| `nginx_replicas` | number | `2` | Nombre de rèpliques de Nginx |
+| `backend_replicas` | number | `1` | Nombre de rèpliques del backend |
+| `nginx_port` | number | `80` | Port de Nginx |
+| `backend_port` | number | `8080` | Port del backend |
+| `app_namespace` | string | `default` | Namespace de Kubernetes |
+
+Per desplegar una versió específica (per exemple, una generada per un commit concret a la CI), es poden passar les variables directament per l'ordre:
+Bash
+```bash
+terraform apply -var="nginx_image=eusebiuboloc/nginx-gsx:a1b2c3d"
+```
+## Outputs
+
+Després de `terraform apply`, Terraform mostra informació útil sobre els recursos creats:
+
+| Output | Descripció | Exemple |
+|---|---|---|
+| `nginx_service_name` | Nom del servei Nginx a Kubernetes | `nginx-proxy` |
+| `nginx_node_port` | Port extern per accedir a Nginx | `31479` |
+| `backend_service_name` | Nom del servei backend a Kubernetes | `python-backend` |
+| `backend_cluster_ip` | IP interna del backend dins del clúster | `10.96.x.x` |
+
+El `nginx_node_port` és especialment útil per accedir a Nginx des de fora:
+
+```bash
+curl http://$(minikube ip):<nginx_node_port>
+```
 
 ## Decisió de disseny: per què Terraform?
 

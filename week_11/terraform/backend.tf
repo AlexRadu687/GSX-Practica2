@@ -28,7 +28,9 @@ resource "kubernetes_deployment" "python_backend" {
       spec {
         container {
           name  = "python-backend"
-          image = var.backend_image # Imatge de Docker Hub: eusebiuboloc/python-http-server:v1
+          image = var.backend_image # Imatge de Docker Hub: eusebiuboloc/python-http-server:latest
+
+          image_pull_policy = "Always" # Sempre descarrega la imatge més recent
 
           port {
             container_port = var.backend_port # Port on escolta el backend (8080)
