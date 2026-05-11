@@ -8,7 +8,7 @@ class SimpleHandler(BaseHTTPRequestHandler):
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
         # Escrivim el missatge
-        self.wfile.write(b"Hello from container\n")
+        self.wfile.write(b"Hello from container v2\n")
 
 def run(server_class=HTTPServer, handler_class=SimpleHandler, port=8080):
     server_address = ('', port)
