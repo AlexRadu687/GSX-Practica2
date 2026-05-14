@@ -1,0 +1,13 @@
+# Política per defecte: bloqueja TOT el tràfic entrant i sortint
+# Tots els pods del namespace default queden aïllats
+# A partir d'aquí, només s'obre el tràfic explícitament permès
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all        # Nom descriptiu de la política
+  namespace: default            # S'aplica al namespace default
+spec:
+  podSelector: {}               # {} significa: aplica a TOTS els pods del namespace
+  policyTypes:
+    - Ingress                   # Bloqueja tràfic entrant
+    - Egress                    # Bloqueja tràfic sortint

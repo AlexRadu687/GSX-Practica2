@@ -1,0 +1,32 @@
+# Política per Nginx: accepta tràfic de l'exterior i pot parlar amb el backend
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: nginx-policy
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: nginx-proxy                # S'aplica als pods amb etiqueta app=nginx-proxy
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 80              # Accepta tràfic HTTP de qualsevol origen (Internet)
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: python-backend      # Nginx només pot parlar amb el backend
+      ports:
+        - protocol: TCP
+          port: 8080
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

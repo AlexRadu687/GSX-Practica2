@@ -1,0 +1,30 @@
+# Política pel backend: només accepta tràfic provinent de pods de Nginx
+# El backend no ha de ser accessible des de cap altre lloc
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-policy
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: python-backend              # S'aplica als pods amb etiqueta app=python-backend
+  policyTypes:
+    - Ingress                   # Controla el tràfic entrant al backend
+    - Egress                    # Controla el tràfic sortint del backend
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: nginx-proxy        # Només els pods de Nginx poden enviar tràfic al backend
+      ports:
+        - protocol: TCP
+          port: 8080            # Només al port 8080 (on escolta el servidor Python)
+  egress:
+    - to:
+        - namespaceSelector: {}   # Permet que el backend faci consultes DNS a qualsevol lloc
+      ports:
+        - protocol: UDP
+          port: 53              # Port DNS
+        - protocol: TCP
+          port: 53

@@ -122,27 +122,63 @@ Quan Nginx fa `proxy_pass http://python-backend:8080`, necessita resoldre el nom
 
 ## Com Aplicar les Polítiques
 
+Perquè les polítiques de xarxa tinguin efecte, és imprescindible que el clúster de Kubernetes estigui gestionat per un controlador de xarxa compatible (CNI) com **Calico**.
+
+### 1. Preparació de l'Entorn
+
+Abans d'aplicar les polítiques, ens assegurem que el clúster s'inicia amb el suport necessari:
+
 ```bash
-# Aplicar totes les NetworkPolicies
-minikube kubectl -- apply -f networkpolicies/
+# Reiniciem el clúster amb el driver de xarxa Calico
+minikube delete
+minikube start --cni=calico
 
-# Verificar que s'han creat
-minikube kubectl -- get networkpolicies
+# Despleguem l'aplicació (si no està ja activa)
+cd week_11/terraform
+terraform apply -auto-approve
 
-# Veure els detalls d'una política
-minikube kubectl -- describe networkpolicy backend-policy
 ```
+
+### 2. Aplicació de les NetworkPolicies
+
+Un cop l'aplicació està corrent, apliquem les restriccions de seguretat definides als fitxers YAML:
+
+```bash
+# Apliquem totes les polítiques del directori
+kubectl apply -f week_12/network-policies/
+
+# Verifiquem que s'han creat correctament
+kubectl get networkpolicies
+
+```
+
+---
 
 ## Com Provar les Polítiques
 
-```bash
-# Verificar que Nginx pot arribar al backend (ha de funcionar)
-minikube kubectl -- exec -it <nginx-pod> -- sh
-curl http://python-backend:8080
-# Resultat esperat: Hello from container
+Realitzem proves per validar que la segmentació de xarxa funciona segons el disseny de "Defense-in-Depth".
 
-# Verificar que el backend NO pot arribar a Nginx (ha de fallar)
-minikube kubectl -- exec -it <backend-pod> -- sh
-curl http://nginx-service:80
-# Resultat esperat: connexió rebutjada o timeout
+### A. Test de Connectivitat Permesa
+
+Verifiquem que el flux de dades legítim (**Nginx → Backend**) segueix actiu.
+
+```bash
+# Executem un curl des del pod de Nginx cap al servei del Backend
+kubectl exec -it deployment/nginx-proxy -- curl --connect-timeout 2 http://python-backend:8080
+
 ```
+
+* **Resultat esperat:** Resposta `200 OK` (p. ex. "Hello from container v2").
+
+### B. Test d'Aïllament (Security Violation)
+
+Verifiquem que la política `default-deny` i la restricció del backend bloquegen el tràfic no autoritzat.
+
+```bash
+# Intentem accedir al backend des d'un pod sense l'etiqueta 'app: nginx'
+kubectl run mallory --image=busybox -it --rm --labels="app=intruder" -- wget -qO- --timeout=2 http://python-backend:8080
+
+```
+
+* **Resultat esperat:** `wget: bad address 'python-backend:8080`.
+* **Significat:** La NetworkPolicy està descartant els paquets (DROP), complint amb l'objectiu de seguretat.
