@@ -20,11 +20,6 @@ L'objectiu és assegurar que el sistema es pot aixecar sense cap dependència o 
     ```bash
     kubectl delete all --all -n default
     ```
-*   **Reinici del Clúster (Opcional si hi ha corrupció):** En cas de detectar errors en els components de sistema, es realitza una purga total del clúster:
-    
-    ```bash
-    minikube delete --all --purge
-    ```
 
 ### Verificació:
 S'ha executat `kubectl get all` i s'ha confirmat que el clúster respon correctament i no conté cap recurs de l'aplicació.
@@ -39,7 +34,7 @@ Fem el desplegament automatitzat mitjançant Infraestructura com a Codi.
 1.  **Inici del clúster amb suport de xarxa:**
     Es llança Minikube.
     ```bash
-    minikube start
+    minikube start --cni=calico
     ```
 2.  **Execució cronometrada de Terraform:**
     ```bash
@@ -70,31 +65,28 @@ Fem el desplegament automatitzat mitjançant Infraestructura com a Codi.
 
 ![alt text](extern-access.png)
 
-### D. Seguretat: NetworkPolicies Enforcement
+### D. NetworkPolicies Enforcement
 *   **Test:** Intentar arribar al backend des d'un pod no autoritzat (simulació d'intrus).
 *   **Execució:** `kubectl run mallory --image=busybox -it --rm -- wget -qO- --timeout=2 http://python-backend:8080`
 *   **Resultat:** **Timeout**. La NetworkPolicy bloqueja el tràfic no permès, complint amb el principi de "Least Privilege".
+
+![alt text](network-policies-Enforcement.png)
 
 ---
 
 ## 4. Documentació del Procés i Mètriques
 
 ### Mètriques de Temps
-*   **Temps de desplegament total (Terraform):** `[INSERIR TEMPS REAL, ex: 1m 45s]`
-*   **Temps fins a l'estat "Ready":** `[INSERIR TEMPS, ex: 2m 05s]`
+*   **Temps de desplegament total (Terraform):** 25.9 s
+*   **Temps fins a l'estat "Ready":** 44.9 s
+
+![alt text](time-metrics.png)
 
 ### Incidències i Solucions
 | Problema detectat | Causa arrel | Solució aplicada |
 | :--- | :--- | :--- |
 | Error `invalid character 'H'` | Es van esborrar manualment components de `kube-system`. | Reinici complet de Minikube per restaurar el Control Plane. |
 | NetworkPolicies no bloquejaven | El clúster es va iniciar sense un CNI compatible. | Reinici de Minikube utilitzant el paràmetre `--cni=calico`. |
-
-### Captures de Pantalla (Evidències)
-> **📷 Adjunts:**
-> 1. `clean_check.png`: Terminal confirmant l'absència de recursos.
-> 2. `terraform_time.png`: Resultat de la comanda `time` amb l'èxit de Terraform.
-> 3. `connectivity_test.png`: Curl intern funcionant entre pods.
-> 4. `security_denied.png`: Timeout del wget demostrant el funcionament de la NetworkPolicy.
 
 ---
 
