@@ -14,8 +14,6 @@ L'entorn utilitza una arquitectura de microserveis on cada component té una res
 
 - **Backend (Python):** Processa la petició i retorna la resposta.
 
-- **Volum Compartit:** Espai de persistència on ambdós contenidors poden escriure i llegir dades.
-
 ### Diagrama de Flux
 
 ```text
@@ -27,11 +25,11 @@ L'entorn utilitza una arquitectura de microserveis on cada component té una res
        |  Nginx Reverse Proxy  | 
        +-----------------------+
                  |
-          (gsx-network:8080)
+       (HTTP://python-backend:8080) <--- Comunicació Interna
                  v
-       +-----------------------+          +------------------------+
-       |    Python Backend     | <------> | Volum: dades_compartides |
-       +-----------------------+          +------------------------+
+       +-----------------------+ 
+       |    Python Backend     | 
+       +-----------------------+          
 ```
 
 ## Configuració i Gestió de Variables
@@ -51,16 +49,12 @@ Tota la configuració es centralitza en el fitxer `.env`:
 | `NGINX_NAME` | `nginx-proxy` | Nom del contenidor Nginx |
 | `BACKEND_NAME` | `python-backend` | Nom del contenidor backend |
 | `NETWORK_NAME` | `gsx-network` | Nom de la xarxa virtual |
-| `VOLUME_NAME` | `dades_compartides` | Nom del volum compartit |
 
 > **Nota de seguretat:** El fitxer `.env` està inclòs al `.gitignore` per evitar que configuracions locals es publiquin al repositori.
 
-## Persistència de Dades
+## Nota sobre la Persistència
 
-Per garantir que les dades sobrevisquin al reinici dels contenidors, s'ha configurat un volum de Docker anomenat `dades_compartides`:
-
-- **Ruta interna:** `/data`
-- **Funcionament:** Ambdós contenidors (Nginx i Backend) tenen accés al mateix volum, permetent la persistència de fitxers i l'intercanvi de dades entre serveis.
+Aquest sistema s'ha dissenyat sota un model Stateless (sense estat). Com que el backend processa peticions de manera efímera i no requereix l'escriptura de fitxers permanents, s'ha eliminat la dependència de volums compartits. Això millora la velocitat de desplegament i facilita l'escalabilitat en entorns de producció com Kubernetes.
 
 ## Xarxa i Comunicació (Networking)
 
@@ -90,16 +84,13 @@ docker-compose ps
 
 # Verifica els logs en temps real
 docker-compose logs -f
+
+# Verifica que el sistema respon correctament (Proxy -> Backend)
+curl http://localhost:80
 ```
 
 ### 4. Aturar l'entorn
 
 ```bash
 docker-compose down
-```
-
-Per eliminar també els volums al aturar l'entorn:
-
-```bash
-docker-compose down -v
 ```

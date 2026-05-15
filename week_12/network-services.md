@@ -4,9 +4,9 @@
 
 ### Què és i quin problema resol?
 
-DNS és el sistema que tradueix noms llegibles per humans (com `greendervcorp.com` o `backend.intern`) a adreces IP numèriques que els ordinadors entenen. Sense DNS, per accedir a qualsevol servei caldria memoritzar adreces com `192.168.1.45` en lloc de noms com `servidor-backend`.
+DNS és el sistema que tradueix noms llegibles per humans (com `greendervcorp.com`) a adreces IP numèriques que els ordinadors entenen. Sense DNS, per accedir a qualsevol servei caldria memoritzar adreces com `192.168.1.45` en lloc de noms com `servidor-backend`.
 
-En una organització com GreenDevCorp, DNS és fonamental per dues raons. Primera, els usuaris i sistemes utilitzen noms per accedir als serveis interns (`gitlab.intern`, `monitoring.intern`), cosa que facilita la gestió i evita errors. Segona, quan les IPs canvien (per exemple, en migrar un servidor), només cal actualitzar el DNS en un lloc; tots els sistemes que utilitzen el nom continuen funcionant sense cap canvi.
+En una organització com GreenDevCorp, DNS és fonamental per dues raons. Primera, els usuaris i sistemes utilitzen noms per accedir als serveis interns, cosa que facilita la gestió i evita errors. Segona, quan les IPs canvien (per exemple, en migrar un servidor), només cal actualitzar el DNS en un lloc; tots els sistemes que utilitzen el nom continuen funcionant sense cap canvi.
 
 ### Com funciona (a alt nivell)?
 

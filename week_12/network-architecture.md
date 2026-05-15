@@ -71,13 +71,13 @@
 ### Justificació del Disseny
 
 **Per què 10.0.0.0/16 com a rang principal?**
-Utilitzem el rang privat `10.0.0.0/16` perquè ofereix 65.534 adreces IP, suficients per créixer de 20 a centenars de persones sense redissenyar la xarxa. És un rang privat estàndard (RFC 1918) que no entra en conflicte amb adreces públiques d'Internet.
+Utilitzem el rang privat `10.0.0.0/16` perquè ofereix 65.534 adreces IP, suficients per créixer de 20 a centenars de persones sense redissenyar la xarxa. És un rang privat estàndard que no entra en conflicte amb adreces públiques d'Internet.
 
 **Per què /24 per a cada subxarxa?**
 Cada subxarxa `/24` ofereix 254 adreces IP usables. Per a GreenDevCorp amb 20+ persones i creixement previst, és més que suficient per a cada entorn. A més, `/24` és fàcil de gestionar i memoritzar, i facilita la configuració de firewalls i polítiques de xarxa.
 
 **Per què separar Development, Staging i Production?**
-El principi de segmentació de xarxa estableix que entorns amb nivells de risc diferent han d'estar aïllats. Un error en Development no ha de poder afectar Production. A més, compleix requisits de compliment normatiu (com PCI-DSS o ISO 27001) que exigeixen separació d'entorns.
+El principi de segmentació de xarxa estableix que entorns amb nivells de risc diferent han d'estar aïllats. Un error en Development no ha de poder afectar Production. A més, compleix requisits de compliment normatiu que exigeixen separació d'entorns.
 
 **Per què una subxarxa de Database aïllada?**
 Les bases de dades contenen les dades més sensibles de l'organització. Aïllar-les en una subxarxa pròpia (`10.0.4.0/24`) permet aplicar polítiques de firewall molt restrictives: només els servidors d'aplicació de Production poden accedir-hi, res més.

@@ -1,4 +1,4 @@
-# 🚀 Challenge B: Full Integration Test Report
+# Challenge B: Full Integration Test Report
 
 Aquest informe documenta el cicle de vida complet de la infraestructura de **GreenDevCorp**: des de l'eliminació total dels recursos fins a la verificació de la connectivitat i seguretat en producció.
 
@@ -70,7 +70,7 @@ Fem el desplegament automatitzat mitjançant Infraestructura com a Codi.
 *   **Execució:** `kubectl run mallory --image=busybox -it --rm -- wget -qO- --timeout=2 http://python-backend:8080`
 *   **Resultat:** **Timeout**. La NetworkPolicy bloqueja el tràfic no permès, complint amb el principi de "Least Privilege".
 
-![alt text](network-policies-Enforcement.png)
+![alt text](network-policies-enforcement.png)
 
 ---
 
